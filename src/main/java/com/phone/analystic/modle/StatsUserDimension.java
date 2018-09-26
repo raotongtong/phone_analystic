@@ -16,27 +16,28 @@ import java.util.Objects;
  * @Description: 可以用于用户模块和浏览器模块的map和reduce阶段输出的key的类型的顶级父类
  */
 public class StatsUserDimension extends StatsBaseDimension{
-    private StatsCommonDimention statsCommonDimention = new StatsCommonDimention();
     private BrowserDimension browserDimension = new BrowserDimension();
+    private StatsCommonDimention statsCommonDimention = new StatsCommonDimention();
+
 
     public StatsUserDimension() {
     }
 
     public StatsUserDimension(StatsCommonDimention statsCommonDimention, BrowserDimension browserDimension) {
-        this.statsCommonDimention = statsCommonDimention;
         this.browserDimension = browserDimension;
+        this.statsCommonDimention = statsCommonDimention;
     }
 
     @Override
     public void write(DataOutput dataOutput) throws IOException {
-        statsCommonDimention.write(dataOutput);
         browserDimension.write(dataOutput);
+        statsCommonDimention.write(dataOutput);
     }
 
     @Override
     public void readFields(DataInput dataInput) throws IOException {
-        statsCommonDimention.readFields(dataInput);
         browserDimension.readFields(dataInput);
+        statsCommonDimention.readFields(dataInput);
     }
 
     @Override
@@ -46,11 +47,11 @@ public class StatsUserDimension extends StatsBaseDimension{
         }
 
         StatsUserDimension other = (StatsUserDimension) o;
-        int tmp = this.statsCommonDimention.compareTo(other.statsCommonDimention);
+        int tmp = this.browserDimension.compareTo(other.browserDimension);
         if(tmp != 0){
             return tmp;
         }
-        return this.browserDimension.compareTo(browserDimension);
+        return this.statsCommonDimention.compareTo(other.statsCommonDimention);
     }
 
     @Override
@@ -65,15 +66,7 @@ public class StatsUserDimension extends StatsBaseDimension{
     @Override
     public int hashCode() {
 
-        return Objects.hash(statsCommonDimention, browserDimension);
-    }
-
-    public StatsCommonDimention getStatsCommonDimention() {
-        return statsCommonDimention;
-    }
-
-    public void setStatsCommonDimention(StatsCommonDimention statsCommonDimention) {
-        this.statsCommonDimention = statsCommonDimention;
+        return Objects.hash(browserDimension,statsCommonDimention);
     }
 
     public BrowserDimension getBrowserDimension() {
@@ -82,5 +75,13 @@ public class StatsUserDimension extends StatsBaseDimension{
 
     public void setBrowserDimension(BrowserDimension browserDimension) {
         this.browserDimension = browserDimension;
+    }
+
+    public StatsCommonDimention getStatsCommonDimention() {
+        return statsCommonDimention;
+    }
+
+    public void setStatsCommonDimention(StatsCommonDimention statsCommonDimention) {
+        this.statsCommonDimention = statsCommonDimention;
     }
 }

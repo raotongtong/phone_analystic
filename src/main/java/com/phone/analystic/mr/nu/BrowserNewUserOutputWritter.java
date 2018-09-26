@@ -10,20 +10,16 @@ import com.phone.common.GlobalConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 
-import java.io.IOException;
-import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 
 /**
- * @ClassName: NewUserOutputWritter
+ * @ClassName: BrowserNewUserOutputWritter
  * @Author: rtt
- * @Date: 2018/9/21 0021 下午 2:36
+ * @Date: 2018/9/25 0025 上午 11:43
  * @Version: 1.0
- * @Description: 在resources文件夹中output_writter.xml这个文件中有这个包名 + 类名，就是给sql语句赋值用的
+ * @Description: java类作用描述
  */
-public class NewUserOutputWritter implements IOutputWriter{
+public class BrowserNewUserOutputWritter implements IOutputWriter {
     @Override
     public void output(Configuration conf, StatsBaseDimension key,
                        StatsOutputValue value, PreparedStatement ps,
@@ -39,6 +35,7 @@ public class NewUserOutputWritter implements IOutputWriter{
             int i = 0;
             ps.setInt(++i,iDimension.getDimensionIdByObject(k.getStatsCommonDimention().getDateDimension()));
             ps.setInt(++i,iDimension.getDimensionIdByObject(k.getStatsCommonDimention().getPlatformDimention()));
+            ps.setInt(++i,iDimension.getDimensionIdByObject(k.getBrowserDimension()));
             ps.setInt(++i,newUser);
             ps.setString(++i,conf.get(GlobalConstants.RUNNING_DATE));
             ps.setInt(++i,newUser);

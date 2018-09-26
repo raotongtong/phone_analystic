@@ -6,4 +6,39 @@
         <name>writter_new_user</name>
         <value>com.phone.analystic.mr.nu.NewUserOutputWritter</value>
     </property>
+
+    <property>
+        <name>writter_browser_new_user</name>
+        <value>com.phone.analystic.mr.nu.BrowserNewUserOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_active_user</name>
+        <value>com.phone.analystic.mr.au.ActiveUserOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_browser_active_user</name>
+        <value>com.phone.analystic.mr.au.BrowserActiveUserOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_active_member</name>
+        <value>com.phone.analystic.mr.am.ActiveMemberOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_browser_active_member</name>
+        <value>com.phone.analystic.mr.am.BrowserActiveMemberOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_new_member</name>
+        <value>com.phone.analystic.mr.nm.NewMemberOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_browser_new_member</name>
+        <value>com.phone.analystic.mr.nm.BrowserNewMemberOutputWritter</value>
+    </property>
 </configuration>

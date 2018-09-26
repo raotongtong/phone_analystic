@@ -20,4 +20,14 @@ public class GlobalConstants {
     public static final String USER = "root";
 
     public static final String PASSWORD = "root";
+
+    public static final long DAY_OF_MILISECONDS = 86400000L;//24*60*60*1000
+
+    public static final String YESTERDAY_TOTAL_USER = "yesterday_total_user";
+
+    public static final String NOWDAY_NEW_USER = "nowday_new_user";
+
+    public static final String NOWDAY_NEW_TOTAL_USER = "nowday_new_total_user";
+
+    public static final String STATS_DEVICE_BROWSER_TOTAL_NEW_USERS = "nowday_new_browser_total_user";
 }

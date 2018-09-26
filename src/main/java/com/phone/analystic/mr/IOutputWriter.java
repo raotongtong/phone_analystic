@@ -17,7 +17,7 @@ import java.sql.PreparedStatement;
 public interface IOutputWriter {
 
     /**
-     * 为每一个kpi的最终结果赋值的接口
+     * 为每一个kpi的最终结果赋值的接口，最终的赋值的类在各个kpi的包中
      * @param conf
      * @param key
      * @param value

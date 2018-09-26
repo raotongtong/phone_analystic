@@ -1,4 +1,4 @@
-package com.phone.analystic.mr.nu;
+package com.phone.analystic.mr.nm;
 
 import com.phone.Util.JdbcUtil;
 import com.phone.Util.TimeUtil;
@@ -7,8 +7,11 @@ import com.phone.analystic.modle.base.DateDimension;
 import com.phone.analystic.modle.value.map.TimeOutputValue;
 import com.phone.analystic.modle.value.reduce.OutputWritable;
 import com.phone.analystic.mr.OutputMySqlFormat;
+import com.phone.analystic.mr.am.ActiveMemberMapper;
+import com.phone.analystic.mr.am.ActiveMemberReducer;
 import com.phone.analystic.mr.service.IDimension;
 import com.phone.analystic.mr.service.impl.IDimensionImpl;
+import com.phone.common.Constants;
 import com.phone.common.DateEnum;
 import com.phone.common.GlobalConstants;
 import org.apache.commons.lang.StringUtils;
@@ -30,35 +33,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @ClassName: NewUserRunner
- * @Author: rtt
- * @Date: 2018/9/21 0021 下午 3:18
- * @Version: 1.0
- * @Description: java类作用描述
- *
- *  truncate dimension_browser;
-    truncate dimension_currency_type;
-    truncate dimension_date;
-    truncate dimension_event;
-    truncate dimension_inbound;
-    truncate dimension_kpi;
-    truncate dimension_location;
-    truncate dimension_os;
-    truncate dimension_payment_type;
-    truncate dimension_platform;
-    truncate event_info;
-    truncate order_info;
-    truncate stats_device_browser;
-    truncate stats_device_location;
-    truncate stats_event;
-    truncate stats_hourly;
-    truncate stats_inbound;
-    truncate stats_order;
-    truncate stats_user;
-    truncate stats_view_depth;
+ * activeUser的runner方法
  */
-public class NewUserRunner implements Tool{
-    private static Logger logger = Logger.getLogger(NewUserRunner.class);
+public class NewMemberRunner implements Tool{
+    private static Logger logger = Logger.getLogger(NewMemberRunner.class);
     private Configuration conf = new Configuration();
 
 
@@ -68,7 +46,6 @@ public class NewUserRunner implements Tool{
         conf.addResource("output_mapping.xml");
         conf.addResource("output_writter.xml");
         conf.addResource("new_total_mapping.xml");
-//        conf.set("mapred.jar","phone_analystic-1.0-SNAPSHOT.jar");
         this.conf = conf;
     }
 
@@ -85,16 +62,16 @@ public class NewUserRunner implements Tool{
 
         Job job = Job.getInstance(conf);
 
-        job.setJarByClass(NewUserRunner.class);
+        job.setJarByClass(NewMemberRunner.class);
 
 
         //设置map相关
-        job.setMapperClass(NewUserMapper.class);
+        job.setMapperClass(NewMemberMapper.class);
         job.setMapOutputKeyClass(StatsUserDimension.class);
         job.setMapOutputValueClass(TimeOutputValue.class);
 
         //设置reduce相关
-        job.setReducerClass(NewUserReducer.class);
+        job.setReducerClass(NewMemberReducer.class);
         job.setOutputKeyClass(StatsUserDimension.class);
         job.setOutputValueClass(OutputWritable.class);
 
@@ -103,95 +80,68 @@ public class NewUserRunner implements Tool{
         //设置reduce的输出格式类
         job.setOutputFormatClass(OutputMySqlFormat.class);
 
-//        job.setNumReduceTasks(4);
-//        return job.waitForCompletion(true)?0:1;
-
-        if(job.waitForCompletion(true)){
-            this.computeTotalNewUser(job);
+        if(job.waitForCompletion(true)) {
+            handldTotalMembers(job);
             return 0;
         }else{
             return 1;
         }
+
     }
 
-    public static void main(String[] args) {
-        try {
-            ToolRunner.run(new Configuration(),new NewUserRunner(),args);
-        } catch (Exception e) {
-            logger.warn("执行outputToMysql异常.",e);
-        }
-    }
-
-    /**
-     * 计算新增的总用户
-     * 1、获取运行日期当天和前一天的时间维度，并获取其对应的时间维度id，判断id是否大于0。
-     * 2、根据时间维度的id获取前天的总用户和当天的新增用户。
-     * 3、更新新增总用户
-     * @param
-     */
-
-    /**
-     * 总结：为什么写不出来？
-     * 1、通过指定的时间找昨天还有明天，用long类型，然后来加减一天的long类型的数值，86400000L;//24*60*60*1000代表一天
-     * 2、一般的时间类型的转换，要熟悉
-     * 3、要熟悉jdbc操作数据库的代码过程
-     * 4、在项目中，一定要合理来使用map来存储数据
-     *
-     */
-    private void computeTotalNewUser(Job job) {
+    private void handldTotalMembers(Job job) {
         IDimension iDimension = new IDimensionImpl();
-        Connection conn = null;
-        PreparedStatement ps =null;
-        ResultSet rs = null;
 
-        String nowday = job.getConfiguration().get(GlobalConstants.RUNNING_DATE);
-        long nowdayWithLong = TimeUtil.parseString2Long(nowday);
-        long yesterdayWithLong = nowdayWithLong - GlobalConstants.DAY_OF_MILISECONDS;
+        String date = job.getConfiguration().get(GlobalConstants.RUNNING_DATE);
+        long nowday = TimeUtil.parseString2Long(date);
+        long yesterday = nowday - GlobalConstants.DAY_OF_MILISECONDS;
 
-        DateDimension nowdayDateDimension = DateDimension.buildDate(nowdayWithLong, DateEnum.DAY);
-        DateDimension yesterdayDateDimension = DateDimension.buildDate(yesterdayWithLong, DateEnum.DAY);
+        DateDimension nowdayDimension = DateDimension.buildDate(nowday, DateEnum.DAY);
+        DateDimension yesterdayDimension = DateDimension.buildDate(yesterday,DateEnum.DAY);
 
         int nowdayId = -1;
         int yesterdayId = -1;
 
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Map<String,Integer> map = new HashMap<String,Integer>();
+
         try {
-            conn = JdbcUtil.getConn();
-            Map<String,Integer> map = new HashMap<String,Integer>();
+            nowdayId = iDimension.getDimensionIdByObject(nowdayDimension);
+            yesterdayId = iDimension.getDimensionIdByObject(yesterdayDimension);
 
-            nowdayId = iDimension.getDimensionIdByObject(nowdayDateDimension);
-            yesterdayId = iDimension.getDimensionIdByObject(yesterdayDateDimension);
-
-            if(yesterdayId > 0) {
-                ps = conn.prepareStatement(conf.get(GlobalConstants.YESTERDAY_TOTAL_USER));
-                ps.setInt(1, yesterdayId);
+            if(nowdayId > 0){
+                conn = JdbcUtil.getConn();
+                ps = conn.prepareStatement(conf.get("nowday_new_member"));
+                ps.setInt(1,nowdayId);
                 rs = ps.executeQuery();
-                while (rs.next()) {
+                while(rs.next()){
                     int platformDimensionId = rs.getInt("platform_dimension_id");
                     int browserDimensionId = rs.getInt("browser_dimension_id");
-                    int yesterdayTotalNewUser = rs.getInt("total_install_users");
-                    //存储
-                    map.put(platformDimensionId+"_"+browserDimensionId,yesterdayTotalNewUser);
+                    int newMembers = rs.getInt("new_members");
+                    map.put(platformDimensionId+""+browserDimensionId,newMembers);
                 }
             }
 
-            if(nowdayId > 0) {
-                ps = conn.prepareStatement(conf.get(GlobalConstants.NOWDAY_NEW_USER));
-                ps.setInt(1, nowdayId);
+            if(yesterdayId > 0){
+                conn = JdbcUtil.getConn();
+                ps = conn.prepareStatement(conf.get("yesterday_total_members"));
+                ps.setInt(1,yesterdayId);
                 rs = ps.executeQuery();
-                while (rs.next()) {
+                while(rs.next()){
                     int platformDimensionId = rs.getInt("platform_dimension_id");
-                    int browserDimensionId= rs.getInt("browser_dimension_id");
-                    int nowdayNewUser = rs.getInt("new_install_users");
-                    //存储
-                    if(map.containsKey(platformDimensionId+"_"+browserDimensionId)){
-                        nowdayNewUser += map.get(platformDimensionId+"_"+browserDimensionId);
+                    int browserDimensionId = rs.getInt("browser_dimension_id");
+                    int totalMembers = rs.getInt("total_members");
+                    if(map.containsKey(platformDimensionId+""+browserDimensionId)){
+                        totalMembers += map.get(platformDimensionId+""+browserDimensionId);
                     }
-                    map.put(platformDimensionId+"_"+browserDimensionId,nowdayNewUser);
+                    map.put(platformDimensionId+""+browserDimensionId,totalMembers);
                 }
             }
 
             //更新statsNewUser中新增的总用户
-            ps = conn.prepareStatement(conf.get(GlobalConstants.NOWDAY_NEW_TOTAL_USER));
+            ps = conn.prepareStatement(conf.get("stats_user_total_members"));
             for(Map.Entry<String,Integer> en : map.entrySet()){
                 String[] split = en.getKey().split("_");
                 ps.setInt(1,nowdayId);
@@ -203,7 +153,7 @@ public class NewUserRunner implements Tool{
             }
 
             //更新statsBrowserNewUser中的新增总用户
-            ps = conn.prepareStatement(conf.get(GlobalConstants.STATS_DEVICE_BROWSER_TOTAL_NEW_USERS));
+            ps = conn.prepareStatement(conf.get("stats_device_browser_total_members"));
             for(Map.Entry<String,Integer> en : map.entrySet()){
                 String[] split = en.getKey().split("_");
                 ps.setInt(1,nowdayId);
@@ -215,16 +165,22 @@ public class NewUserRunner implements Tool{
                 ps.execute();
             }
         } catch (IOException e) {
-            logger.error("统计总新增用户失败！",e);
-        } catch (SQLException e){
-            logger.error("统计总新增用户失败！",e);
-        } finally {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
             JdbcUtil.close(conn,ps,rs);
         }
-
     }
 
 
+    public static void main(String[] args) {
+        try {
+            ToolRunner.run(new Configuration(),new NewMemberRunner(),args);
+        } catch (Exception e) {
+            logger.warn("执行outputToMysql异常.",e);
+        }
+    }
     //处理参数
     private void handleArgs(Configuration conf, String[] args) {
         String date = null;
@@ -269,7 +225,4 @@ public class NewUserRunner implements Tool{
             logger.warn("设置输入路径异常.",e);
         }
     }
-
-
-
 }

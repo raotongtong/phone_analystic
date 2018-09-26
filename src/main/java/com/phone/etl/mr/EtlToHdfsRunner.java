@@ -43,7 +43,7 @@ public class EtlToHdfsRunner implements Tool {
 
     @Override
     public void setConf(Configuration conf) {
-        conf = this.conf;
+        this.conf = conf;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.phone.analystic.mr.nu;
+package com.phone.analystic.mr.au;
 
 import com.phone.analystic.modle.StatsUserDimension;
 import com.phone.analystic.modle.value.map.TimeOutputValue;
@@ -10,24 +10,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * @ClassName: NewUserReducer
- * @Author: rtt
- * @Date: 2018/9/20 0020 下午 2:56
- * @Version: 1.0
- * @Description: 用户模块下的新增用户的reducer
- * 问题：
- * (1)这里输出的StatsUserDimension、OutputWritable都是对象，输出到数据库的不可能是对象，而是对象中所对应维度的信息,所以我们需要
- *      创建一个方法，将对象转化成所对应的维度的id
+ * 活跃用户reducer方法
  */
-public class NewUserReducer extends Reducer<StatsUserDimension,TimeOutputValue,
+public class ActiveUserReducer extends Reducer<StatsUserDimension,TimeOutputValue,
         StatsUserDimension,OutputWritable>{
-    private static final Logger logger = Logger.getLogger(NewUserReducer.class);
+    private static final Logger logger = Logger.getLogger(ActiveUserReducer.class);
     private OutputWritable v = new OutputWritable();
     private Set unique = new HashSet(); //用于去重uuid
     //mapWritable用来存储去重后的newuser，mapWritable是一种map的优化
@@ -48,12 +39,8 @@ public class NewUserReducer extends Reducer<StatsUserDimension,TimeOutputValue,
             unique.add(tv.getId());
         }
 
-
         //构造输出的value
         this.v.setKpi(KpiType.valueOfKpiName(key.getStatsCommonDimention().getKpiDimension().getKpiName()));
-//        if(key.getStatsCommonDimention().getKpiDimension().getKpiName().equals(KpiType.NEW_USER.kpiName)){
-//            this.v.setKpi(KpiType.NEW_USER);
-//        }
 
         //new IntWritable(-1)，这个只是个标识，-1 是key，新增用户是value，说明通过-1就可以找到新增用户
         //这个是给NewUserOutputWritter用的，也就是给sql语句赋值用的
@@ -61,7 +48,5 @@ public class NewUserReducer extends Reducer<StatsUserDimension,TimeOutputValue,
         this.v.setValue(this.map);
         //输出
         context.write(key,this.v);
-
-
     }
 }

@@ -15,7 +15,7 @@ import java.io.IOException;
  * @Description: java类作用描述
  */
 public class TimeOutputValue extends StatsOutputValue {
-    private String id; //对id的泛指，可以使uuid，可以使umid，可以是sessionId
+    private String id; //对id的泛指，可以是uuid，可以是umid，可以是sessionId
     private long time; //时间戳
 
     @Override

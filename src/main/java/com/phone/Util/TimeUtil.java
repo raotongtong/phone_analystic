@@ -63,6 +63,11 @@ public class TimeUtil {
         return sdf.format(calendar.getTime());
     }
 
+    /**
+     * 获取指定日期的前一天
+     */
+//    public static Date get
+
 
     /**
      * 将时间戳转换成默认格式的日期

@@ -17,7 +17,7 @@ public class Constants {
         //下面这几行代码必须写在最前面
         //1为id，通过1可以识别LAUNCH，"lanuch event"只是一个描述，可以删除
         //"e_1" 为别名，通过别名也可以找到LAUNCH
-        LANUCH(1,"lanuch event","e_1"),
+        LANUCH(1,"lanuch event","e_l"),
         PAGEVIEW(2,"pageview event","e_pv"),
         EVENT(3,"event name","e_e"),
         CHARGEREQUEST(4,"charge request event","e_crt"),

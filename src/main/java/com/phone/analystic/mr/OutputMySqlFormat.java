@@ -107,7 +107,7 @@ public class OutputMySqlFormat extends OutputFormat<StatsBaseDimension,OutputWri
 
                 //为ps赋值准备
                 //得到com.phone.analystic.mr.nu.NewUserOutputWritter这个包名+类名
-                String className = conf.get("writter_" + conf.get(kpi.kpiName));
+                String className = conf.get("writter_" + kpi.kpiName);
                 //通过包名+类名通过反射来给sql语句赋值
                 Class<?> classz = Class.forName(className); //将包名 + 类名转换成类
                 //这里实例化就可以得到NewUserOutputWritter对象
@@ -121,7 +121,7 @@ public class OutputMySqlFormat extends OutputFormat<StatsBaseDimension,OutputWri
                 //对赋值好的ps进行执行
                 if(batch.size() %50 == 0){ //有50个ps执行
                     ps.executeBatch();  //批量执行，在NewUserOutputWritter.class中执行了ps.batch()，先加入到批次中，这里就是执行
-                    conn.commit(); //提交批处理执行
+//                    conn.commit(); //提交批处理执行
                     batch.remove(kpi);  //将执行完的ps移除掉
                 }
 
@@ -136,7 +136,7 @@ public class OutputMySqlFormat extends OutputFormat<StatsBaseDimension,OutputWri
             try {
                 for(Map.Entry<KpiType,PreparedStatement> en : map.entrySet()){
                     en.getValue().executeBatch();  //将剩余的ps进行执行
-                    this.conn.commit();
+//                    this.conn.commit();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
