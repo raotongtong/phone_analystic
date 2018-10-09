@@ -119,7 +119,7 @@ public class OutputMySqlFormat extends OutputFormat<StatsBaseDimension,OutputWri
                  * 老师为啥写的这么麻烦，因为添加批次的操作，是优化的一部分，所以就需要这样写
                  */
                 //对赋值好的ps进行执行
-                if(batch.size() %50 == 0){ //有50个ps执行
+                if(batch.size() %50 == 0 || batch.get(kpi) == 50){ //有50个ps执行
                     ps.executeBatch();  //批量执行，在NewUserOutputWritter.class中执行了ps.batch()，先加入到批次中，这里就是执行
 //                    conn.commit(); //提交批处理执行
                     batch.remove(kpi);  //将执行完的ps移除掉
@@ -140,7 +140,7 @@ public class OutputMySqlFormat extends OutputFormat<StatsBaseDimension,OutputWri
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-            }finally {
+            } finally {
                 for(Map.Entry<KpiType,PreparedStatement> en : map.entrySet()){
                     JdbcUtil.close(conn,en.getValue(),null); //关闭所有的资源
                 }

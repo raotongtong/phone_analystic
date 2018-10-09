@@ -1,50 +1,52 @@
-package com.phone.analystic.mr.nm;
+package com.phone.analystic.mr.b_pv;
 
-import com.phone.Util.JdbcUtil;
-import com.phone.Util.TimeUtil;
 import com.phone.analystic.modle.StatsUserDimension;
 import com.phone.analystic.modle.value.map.TimeOutputValue;
 import com.phone.analystic.modle.value.reduce.OutputWritable;
 import com.phone.common.KpiType;
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * 活跃用户reducer方法
  */
-public class NewMemberReducer extends Reducer<StatsUserDimension,TimeOutputValue,
+public class PVReducer extends Reducer<StatsUserDimension,TimeOutputValue,
         StatsUserDimension,OutputWritable>{
-    private static final Logger logger = Logger.getLogger(NewMemberReducer.class);
+    private static final Logger logger = Logger.getLogger(PVReducer.class);
     private OutputWritable v = new OutputWritable();
-    private Set unique = new HashSet(); //用于去重mid
+    private List list = new ArrayList();
     //mapWritable用来存储去重后的newuser，mapWritable是一种map的优化
     private MapWritable map = new MapWritable();
 
-
     @Override
     protected void reduce(StatsUserDimension key, Iterable<TimeOutputValue> values, Context context) throws IOException, InterruptedException {
+        //清空map
         map.clear();
-        unique.clear();
+        list.clear();
 
+        /**
+         * 循环
+         * 这里说明OutputWritable里面的内容依赖TimeOutputValue，也就是传的参数都从map传入的，
+         * 包括传入的kpi(如：new_user)也是从map端传入的
+         */
         for(TimeOutputValue tv : values){
-            String memberId = tv.getId();
-            unique.add(memberId);
+            list.add(tv.getId());
         }
-        //然后给map中进行去重操作，Set
+
+        //构造输出的value
         this.v.setKpi(KpiType.valueOfKpiName(key.getStatsCommonDimention().getKpiDimension().getKpiName()));
-        this.map.put(new IntWritable(-1),new IntWritable(this.unique.size()));
+
+        //new IntWritable(-1)，这个只是个标识，-1 是key，新增用户是value，说明通过-1就可以找到新增用户
+        //这个是给NewUserOutputWritter用的，也就是给sql语句赋值用的
+        this.map.put(new IntWritable(-1),new IntWritable(this.list.size()));
         this.v.setValue(this.map);
         //输出
         context.write(key,this.v);

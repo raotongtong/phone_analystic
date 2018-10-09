@@ -13,7 +13,7 @@ public class GlobalConstants {
 
     public static final String DEFAULT_VALUE = "unknow";
 
-    public static final String URL = "jdbc:mysql://node01:3306/report";
+    public static final String URL = "jdbc:mysql://node01:3306/report?useUnicode=yes&characterEncoding=utf8";
 
     public static final String DRIVER = "com.mysql.jdbc.Driver";
 

@@ -23,6 +23,11 @@
     </property>
 
     <property>
+        <name>writter_hourly_active_user</name>
+        <value>com.phone.analystic.mr.au.BrowserActiveUserOutputWritter</value>
+    </property>
+
+    <property>
         <name>writter_active_member</name>
         <value>com.phone.analystic.mr.am.ActiveMemberOutputWritter</value>
     </property>
@@ -40,5 +45,35 @@
     <property>
         <name>writter_browser_new_member</name>
         <value>com.phone.analystic.mr.nm.BrowserNewMemberOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_browser_pv</name>
+        <value>com.phone.analystic.mr.b_pv.BrowserPVOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_session</name>
+        <value>com.phone.analystic.mr.session.SessionOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_browser_session</name>
+        <value>com.phone.analystic.mr.session.BrowserSessionOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_hourly_session</name>
+        <value>com.phone.analystic.mr.session.BrowserSessionOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_hourly_session_length</name>
+        <value>com.phone.analystic.mr.session.BrowserSessionOutputWritter</value>
+    </property>
+
+    <property>
+        <name>writter_location</name>
+        <value>com.phone.analystic.mr.location.LocationOutputWritter</value>
     </property>
 </configuration>

@@ -158,6 +158,7 @@ public class NewUserRunner implements Tool{
             conn = JdbcUtil.getConn();
             Map<String,Integer> map = new HashMap<String,Integer>();
 
+            //这里生成了date_dimension表中RUNNING_DATE的时间
             nowdayId = iDimension.getDimensionIdByObject(nowdayDateDimension);
             yesterdayId = iDimension.getDimensionIdByObject(yesterdayDateDimension);
 
@@ -191,16 +192,17 @@ public class NewUserRunner implements Tool{
             }
 
             //更新statsNewUser中新增的总用户
-            ps = conn.prepareStatement(conf.get(GlobalConstants.NOWDAY_NEW_TOTAL_USER));
-            for(Map.Entry<String,Integer> en : map.entrySet()){
-                String[] split = en.getKey().split("_");
-                ps.setInt(1,nowdayId);
-                ps.setInt(2,Integer.parseInt(split[0]));
-                ps.setInt(3,en.getValue());
-                ps.setString(4,conf.get(GlobalConstants.RUNNING_DATE));
-                ps.setInt(5,en.getValue());
-                ps.execute();
-            }
+            //这里有点问题，因为statsNewUser表不考虑浏览器维度，所以这个表的数据有点不对
+//            ps = conn.prepareStatement(conf.get(GlobalConstants.NOWDAY_NEW_TOTAL_USER));
+//            for(Map.Entry<String,Integer> en : map.entrySet()){
+//                String[] split = en.getKey().split("_");
+//                ps.setInt(1,nowdayId);
+//                ps.setInt(2,Integer.parseInt(split[0]));
+//                ps.setInt(3,en.getValue());
+//                ps.setString(4,conf.get(GlobalConstants.RUNNING_DATE));
+//                ps.setInt(5,en.getValue());
+//                ps.execute();
+//            }
 
             //更新statsBrowserNewUser中的新增总用户
             ps = conn.prepareStatement(conf.get(GlobalConstants.STATS_DEVICE_BROWSER_TOTAL_NEW_USERS));
@@ -214,9 +216,7 @@ public class NewUserRunner implements Tool{
                 ps.setInt(6,en.getValue());
                 ps.execute();
             }
-        } catch (IOException e) {
-            logger.error("统计总新增用户失败！",e);
-        } catch (SQLException e){
+        } catch (Exception e) {
             logger.error("统计总新增用户失败！",e);
         } finally {
             JdbcUtil.close(conn,ps,rs);

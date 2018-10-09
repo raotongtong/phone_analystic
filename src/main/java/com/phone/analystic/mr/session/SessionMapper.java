@@ -1,7 +1,5 @@
-package com.phone.analystic.mr.nm;
+package com.phone.analystic.mr.session;
 
-import com.phone.Util.JdbcUtil;
-import com.phone.Util.MemberUtil;
 import com.phone.analystic.modle.StatsCommonDimention;
 import com.phone.analystic.modle.StatsUserDimension;
 import com.phone.analystic.modle.base.BrowserDimension;
@@ -11,38 +9,25 @@ import com.phone.analystic.modle.base.PlatformDimention;
 import com.phone.analystic.modle.value.map.TimeOutputValue;
 import com.phone.common.Constants;
 import com.phone.common.DateEnum;
-import com.phone.common.GlobalConstants;
 import com.phone.common.KpiType;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * 用户模块下的活跃用户
  **/
-public class NewMemberMapper extends Mapper<LongWritable,Text,StatsUserDimension,TimeOutputValue> {
-    private static final Logger logger = Logger.getLogger(NewMemberMapper.class);
+public class SessionMapper extends Mapper<LongWritable,Text,StatsUserDimension,TimeOutputValue> {
+    private static final Logger logger = Logger.getLogger(SessionMapper.class);
     private StatsUserDimension k = new StatsUserDimension();
     private TimeOutputValue v = new TimeOutputValue();
-    private Connection conn = null;
 
-    private KpiDimension newMemberKpi = new KpiDimension(KpiType.NEW_MEMBER.kpiName);
-    private KpiDimension browserNewMemberKpi = new KpiDimension(KpiType.BROWSER_NEW_MEMBER.kpiName);
-
-    @Override
-    protected void setup(Context context) throws IOException, InterruptedException {
-        conn = JdbcUtil.getConn();
-        MemberUtil.deleteByDay(context.getConfiguration(),conn);
-    }
+    private KpiDimension sessionKpi = new KpiDimension(KpiType.SESSION.kpiName);
+    private KpiDimension browserSessionKpi = new KpiDimension(KpiType.BROWSER_SESSION.kpiName);
 
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -59,18 +44,12 @@ public class NewMemberMapper extends Mapper<LongWritable,Text,StatsUserDimension
         //获取想要的字段
         String serverTime = fields[1];
         String platForm = fields[13];
-        String memberid = fields[4];
+        String session = fields[5];
         String browserName = fields[24];
         String browserVersion = fields[25];
 
-        if (StringUtils.isEmpty(serverTime) || StringUtils.isEmpty(memberid) || memberid.equals("null")) {
-            logger.info("serverTime or uuid or memberid is empty");
-            return;
-        }
-
-        //这里判断一下会员是不是新增会员
-        if(!MemberUtil.isNewMember(memberid,conn,context.getConfiguration())){
-            logger.info("该会员不是一个老会员！");
+        if (StringUtils.isEmpty(serverTime) || StringUtils.isEmpty(session)) {
+            logger.info("serverTime and uuid is empty");
             return;
         }
 
@@ -88,7 +67,7 @@ public class NewMemberMapper extends Mapper<LongWritable,Text,StatsUserDimension
         //为statsCommonDimention设值
         statsCommonDimention.setDateDimension(dateDimension);
         statsCommonDimention.setPlatformDimention(platformDimention);
-        statsCommonDimention.setKpiDimension(newMemberKpi);
+        statsCommonDimention.setKpiDimension(sessionKpi);
 
 
         //设置默认的浏览器对象
@@ -97,15 +76,18 @@ public class NewMemberMapper extends Mapper<LongWritable,Text,StatsUserDimension
         this.k.setStatsCommonDimention(statsCommonDimention);
 
         //构建输出的value
-        this.v.setId(memberid);
+        this.v.setId(session);
+        this.v.setTime(stime);
 
         context.write(this.k, this.v);
 
         //以下输出的数据用于计算浏览器模块下的新增用户
-        statsCommonDimention.setKpiDimension(browserNewMemberKpi);
+        statsCommonDimention.setKpiDimension(browserSessionKpi);
         this.k.setBrowserDimension(browserDimension);
         this.k.setStatsCommonDimention(statsCommonDimention);
         //输出
         context.write(this.k, this.v);
+
+
     }
 }

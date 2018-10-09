@@ -120,7 +120,7 @@ public class NewMemberRunner implements Tool{
                     int platformDimensionId = rs.getInt("platform_dimension_id");
                     int browserDimensionId = rs.getInt("browser_dimension_id");
                     int newMembers = rs.getInt("new_members");
-                    map.put(platformDimensionId+""+browserDimensionId,newMembers);
+                    map.put(platformDimensionId+"_"+browserDimensionId,newMembers);
                 }
             }
 
@@ -133,24 +133,24 @@ public class NewMemberRunner implements Tool{
                     int platformDimensionId = rs.getInt("platform_dimension_id");
                     int browserDimensionId = rs.getInt("browser_dimension_id");
                     int totalMembers = rs.getInt("total_members");
-                    if(map.containsKey(platformDimensionId+""+browserDimensionId)){
-                        totalMembers += map.get(platformDimensionId+""+browserDimensionId);
+                    if(map.containsKey(platformDimensionId+"_"+browserDimensionId)){
+                        totalMembers += map.get(platformDimensionId+"_"+browserDimensionId);
                     }
-                    map.put(platformDimensionId+""+browserDimensionId,totalMembers);
+                    map.put(platformDimensionId+"_"+browserDimensionId,totalMembers);
                 }
             }
 
-            //更新statsNewUser中新增的总用户
-            ps = conn.prepareStatement(conf.get("stats_user_total_members"));
-            for(Map.Entry<String,Integer> en : map.entrySet()){
-                String[] split = en.getKey().split("_");
-                ps.setInt(1,nowdayId);
-                ps.setInt(2,Integer.parseInt(split[0]));
-                ps.setInt(3,en.getValue());
-                ps.setString(4,conf.get(GlobalConstants.RUNNING_DATE));
-                ps.setInt(5,en.getValue());
-                ps.execute();
-            }
+//            //更新statsNewUser中新增的总用户
+//            ps = conn.prepareStatement(conf.get("stats_user_total_members"));
+//            for(Map.Entry<String,Integer> en : map.entrySet()){
+//                String[] split = en.getKey().split("_");
+//                ps.setInt(1,nowdayId);
+//                ps.setInt(2,Integer.parseInt(split[0]));
+//                ps.setInt(3,en.getValue());
+//                ps.setString(4,conf.get(GlobalConstants.RUNNING_DATE));
+//                ps.setInt(5,en.getValue());
+//                ps.execute();
+//            }
 
             //更新statsBrowserNewUser中的新增总用户
             ps = conn.prepareStatement(conf.get("stats_device_browser_total_members"));

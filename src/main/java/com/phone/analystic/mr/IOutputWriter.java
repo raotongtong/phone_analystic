@@ -30,4 +30,5 @@ public interface IOutputWriter {
                 PreparedStatement ps,
                 IDimension iDimension);
 
+
 }

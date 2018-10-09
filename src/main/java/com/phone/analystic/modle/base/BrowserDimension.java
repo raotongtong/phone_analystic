@@ -90,7 +90,7 @@ public class BrowserDimension extends BaseDimension{
         if(tmp != 0){
             return tmp;
         }
-        return this.browserVersion.compareTo(browserVersion);
+        return this.browserVersion.compareTo(other.browserVersion);
     }
 
     @Override
